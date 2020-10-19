@@ -9,8 +9,9 @@ using namespace std;
 struct Node
 {
 	char character;
-	node* left;
-	node* right;
+	Node* left;
+	Node* right;
+	int frequency;
 };
 
 struct charAndFrequency
@@ -19,9 +20,9 @@ struct charAndFrequency
 	int frequency;
 };
 
-bool comparator(charAndFrequency struct1, charAndFrequency struct2)
+bool comparator(Node* struct1, Node* struct2)
 {
-	return (struct1.frequency <= struct2.frequency);
+	return (struct1->frequency < struct2->frequency);
 }
 
 int main()
@@ -50,20 +51,28 @@ int main()
 		}
 
 	}
-	
-	cout << "Before Sorting " << endl;
+	vector<Node*> nodeVect;
 	for(int i=0; i<frequencyVect.size(); i++)
 	{
-		cout << frequencyVect[i].character << " : " << frequencyVect[i].frequency << endl;
+		Node *tmp = new Node();
+		tmp->character = frequencyVect[i].character;
+		tmp->frequency = frequencyVect[i].frequency;
+		nodeVect.push_back(tmp);
 	} 
 	
-	sort(frequencyVect.begin(), frequencyVect.end(), comparator);
+	cout << "Before Sorting " << endl;
+	for(int i=0; i<nodeVect.size(); i++)
+	{
+		cout << nodeVect[i]->character << " : " << nodeVect[i]->frequency << endl;
+	} 
+	cout<< " About to sort " << endl;
+	sort(nodeVect.begin(), nodeVect.end(), comparator);
 	
 	cout << "After sorting "<< endl;
 	
-	for(int i=0; i<frequencyVect.size(); i++)
+	for(int i=0; i<nodeVect.size(); i++)
 	{
-		cout << frequencyVect[i].character << " : " << frequencyVect[i].frequency << endl;
+		cout << nodeVect[i]->character << " : " << nodeVect[i]->frequency << endl;
 	} 
 	
 	do
@@ -72,7 +81,7 @@ int main()
 		Pick the first 2 elements. Create 2 nodes out of them. If these two characters were non zero values 
 		that means they will be leaves, else there value will be zero. Make a new node adding the values of the two nodes and 			assign its character as zero. Then remove the original 2 nodes from the vector and add the new node. Repeat the process. 			At the end when we have only 2 nodes left let them be the children of root node.
 		*/
-	}while(frequencyVect.size() > 1);
+	}while(false);//  (frequencyVect.size() > 1);
 	
 
 
