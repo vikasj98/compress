@@ -2,6 +2,7 @@
 #include <cstring>
 #include <vector>
 #include <algorithm>
+#include <string>
 
 using namespace std;
 
@@ -25,6 +26,23 @@ bool comparator(Node* struct1, Node* struct2)
 	return (struct1->frequency < struct2->frequency);
 }
 
+void traverseTree(Node* current, string directions)
+{
+	if(current->character != 0)
+	{
+		//We are at the leaf
+		cout << current->character <<  " : " << current->frequency << " : " << directions << endl;
+		return;
+	}
+	if(0 != current->left)
+	{
+		traverseTree(current->left, directions+'0');	//0 to the left
+	}
+	if(0 != current->right)
+	{
+		traverseTree(current->right, directions+'1');
+	}
+}
 int main()
 {
 	char document[] = "Hello, this is a sample string for which I will try to make a huffman tree";
@@ -77,15 +95,23 @@ int main()
 	
 	do
 	{
-		/*
-		Pick the first 2 elements. Create 2 nodes out of them. If these two characters were non zero values 
-		that means they will be leaves, else there value will be zero. Make a new node adding the values of the two nodes and 			assign its character as zero. Then remove the original 2 nodes from the vector and add the new node. Repeat the process. 			At the end when we have only 2 nodes left let them be the children of root node.
-		*/
-	}while(false);//  (frequencyVect.size() > 1);
-	
-
-
-
+		Node *tmp1;
+		Node *tmp2;
+		tmp1 = nodeVect[0];
+		tmp2 = nodeVect[1];
+		Node *newNode = new Node();
+		newNode->left = tmp1;
+		newNode->right = tmp2;
+		newNode->character = 0;	//0 represents a non leaf node
+		newNode->frequency = tmp1->frequency + tmp2->frequency;
+		nodeVect.erase(nodeVect.begin());	//Removes the 0th element. After this the 1st element will become 0th element
+		nodeVect.erase(nodeVect.begin());	//Removed the element 1
+		nodeVect.push_back(newNode);	//Added the new node to the list. Now the process will be repeated
+		sort(nodeVect.begin(), nodeVect.end(), comparator);
+	}while(nodeVect.size() > 1);
+	Node* root = nodeVect[0];
+	traverseTree(root->left, string("0"));
+	traverseTree(root->right, string("1"));
 	return 0;
 
 
