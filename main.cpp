@@ -57,16 +57,22 @@ void traverseTree(Node* current, unsigned char directions, int depth)
 		//We reached a leaf node, we have encoding for a character here
 		bitset<8> x(directions);
 		//cout << "directions " << int(directions) << endl;
-		cout << current->character << " : " << current->frequency << " : " << depth << " : " << x << endl;
+		cout << current->character << " : " << current->frequency << " : " << depth << " : " << x << endl;;
+		for(int i=depth-1; i>=0; i--)
+		{
+			cout<<x[i];
+		}
+		cout << endl;
+		//<< x << endl;
 		return;
 	}
 	if(current->left != 0)
 	{
-		traverseTree(current->left, directions >> 1, depth+1);
+		traverseTree(current->left, directions << 1, depth+1);
 	}
 	if(current->right != 0)
 	{
-		traverseTree(current->right, ((directions >> 1) | 128), depth+1);
+		traverseTree(current->right, ((directions << 1) | 1), depth+1);
 	}
 }
 
@@ -138,7 +144,7 @@ int main()
 	}while(nodeVect.size() > 1);
 	Node* root = nodeVect[0];
 	traverseTree(root->left, 0, 1);
-	traverseTree(root->right, 128, 1);
+	traverseTree(root->right, 1, 1);
 	//traverseTree(root->left, string("0"));
 	//traverseTree(root->right, string("1"));
 	return 0;
