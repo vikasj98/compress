@@ -3,6 +3,7 @@
 #include <vector>
 #include <algorithm>
 #include <string>
+#include <bitset>
 
 using namespace std;
 
@@ -26,6 +27,7 @@ bool comparator(Node* struct1, Node* struct2)
 	return (struct1->frequency < struct2->frequency);
 }
 
+/*
 void traverseTree(Node* current, string directions)
 {
 	if(current->character != 0)
@@ -43,6 +45,31 @@ void traverseTree(Node* current, string directions)
 		traverseTree(current->right, directions+'1');
 	}
 }
+*/
+/*
+The second argument has all the directions that were taken to reach upto this node. Directions start from MSB. 0 means left, 1 means right
+*/
+void traverseTree(Node* current, unsigned char directions, int depth)
+{
+	//cout << "depth : " << depth << ", directions : " << int(directions) << endl;
+	if(current->character != 0)
+	{
+		//We reached a leaf node, we have encoding for a character here
+		bitset<8> x(directions);
+		//cout << "directions " << int(directions) << endl;
+		cout << current->character << " : " << current->frequency << " : " << depth << " : " << x << endl;
+		return;
+	}
+	if(current->left != 0)
+	{
+		traverseTree(current->left, directions >> 1, depth+1);
+	}
+	if(current->right != 0)
+	{
+		traverseTree(current->right, ((directions >> 1) | 128), depth+1);
+	}
+}
+
 int main()
 {
 	char document[] = "Hello, this is a sample string for which I will try to make a huffman tree";
@@ -110,8 +137,10 @@ int main()
 		sort(nodeVect.begin(), nodeVect.end(), comparator);
 	}while(nodeVect.size() > 1);
 	Node* root = nodeVect[0];
-	traverseTree(root->left, string("0"));
-	traverseTree(root->right, string("1"));
+	traverseTree(root->left, 0, 1);
+	traverseTree(root->right, 128, 1);
+	//traverseTree(root->left, string("0"));
+	//traverseTree(root->right, string("1"));
 	return 0;
 
 
