@@ -7,6 +7,13 @@
 
 using namespace std;
 
+struct CharacterEncoding
+{
+	unsigned int encoding;	//Encoding of the character
+	char depth;			//Number of bits (first n bits from LSB. First bit is the MSB among these bits)
+};
+
+CharacterEncoding CharacterEncodingDictionary[256] = {};
 
 struct Node
 {
@@ -49,13 +56,14 @@ void traverseTree(Node* current, string directions)
 /*
 The second argument has all the directions that were taken to reach upto this node. Directions start from MSB. 0 means left, 1 means right
 */
-void traverseTree(Node* current, unsigned char directions, int depth)
+void traverseTree(Node* current, unsigned int directions, int depth)
 {
 	//cout << "depth : " << depth << ", directions : " << int(directions) << endl;
 	if(current->character != 0)
 	{
 		//We reached a leaf node, we have encoding for a character here
-		bitset<8> x(directions);
+		/*
+		bitset<16> x(directions);
 		//cout << "directions " << int(directions) << endl;
 		cout << current->character << " : " << current->frequency << " : " << depth << " : " << x << endl;;
 		for(int i=depth-1; i>=0; i--)
@@ -64,6 +72,9 @@ void traverseTree(Node* current, unsigned char directions, int depth)
 		}
 		cout << endl;
 		//<< x << endl;
+		*/
+		CharacterEncodingDictionary[current->character].encoding = directions;
+		CharacterEncodingDictionary[current->character].depth = depth;
 		return;
 	}
 	if(current->left != 0)
@@ -78,7 +89,7 @@ void traverseTree(Node* current, unsigned char directions, int depth)
 
 int main()
 {
-	char document[] = "Hello, this is a sample string for which I will try to make a huffman tree";
+	char document[] = "Hello, this is a sample string for which I will try to make a huffman tree. Okay now it seems that I have a basic program to test the compression. Lets add a bigger sentence and see how it peforms. Yes, this sentence that I am typing is to be used for checking the compression achieved";
 	int frequencies[256] = {};
 	
 	for(int i=0; i<=strlen(document); i++)
@@ -145,6 +156,92 @@ int main()
 	Node* root = nodeVect[0];
 	traverseTree(root->left, 0, 1);
 	traverseTree(root->right, 1, 1);
+	
+	for(int i=0; i<256; i++)
+	{
+		if(CharacterEncodingDictionary[i].depth != 0)
+		{
+			unsigned char directions = CharacterEncodingDictionary[i].encoding;
+			unsigned char depth = CharacterEncodingDictionary[i].depth; 
+			bitset<8*sizeof(int)> x(directions);
+			cout << char(i) << " : " << int(depth) << " : " ;//<< x << endl;;
+			for(int i=depth-1; i>=0; i--)
+			{
+				cout<<x[i];
+			}
+			cout << endl;
+		}
+	}
+	
+	int index = 0;
+	char encoded[512] = "";
+	int bitIndex = 0;
+	int byteIndex = 0;
+	int bitInByte = 0;
+	while(index < strlen(document))
+	{
+		char tmp = document[index++];
+		unsigned int encoding = CharacterEncodingDictionary[tmp].encoding;;
+		unsigned char depth = CharacterEncodingDictionary[tmp].depth;
+		int internalIndex = depth-1;
+		while(internalIndex>=0)
+		{
+			//Set/Reset the bit at bitIndex
+			if(((1 << internalIndex) & encoding))
+			{	
+				//Encoding of this bit is 1
+				encoded[byteIndex] |= (1 << bitInByte);
+			}
+			else
+			{
+				encoded[byteIndex] &= (~(1 << bitInByte));
+			}
+			internalIndex--;
+			bitIndex++;
+			bitInByte++;
+			if(bitInByte == 8)
+			{
+				byteIndex++;
+				bitInByte = 0;
+			}
+		}
+		
+	}
+	cout << "Total bytes and bits used : " << byteIndex << ", " << bitIndex << endl;
+	cout << "Original bytes " << strlen(document) << endl;
+	
+	for(int i=0 ; i<= 10; i++)
+	{
+		cout << int(encoded[i]) << " - ";
+	}
+	cout << endl;
+	char decoded[512] = "";
+	int decodingBit = 0;
+	int byteInDecoded = 0;
+	Node *currentNode = root;
+	while(decodingBit <= bitIndex)
+	{
+		int decodingByte = decodingBit/8;
+		int bitInByte = decodingBit % 8;
+		decodingBit++;
+		if(encoded[decodingByte] & (1 << (bitInByte)))
+		{
+			currentNode = currentNode->right;
+		}
+		else
+		{
+			currentNode = currentNode -> left;
+		}
+		if(currentNode->character != 0)
+		{
+			decoded[byteInDecoded++] = currentNode->character;
+			currentNode = root;
+		}
+		
+	}
+	cout << "Original text " << document << endl;
+	cout << "Decoded text " << endl;
+	cout << decoded << endl;
 	//traverseTree(root->left, string("0"));
 	//traverseTree(root->right, string("1"));
 	return 0;
