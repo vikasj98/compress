@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <string>
 #include <bitset>
+#include <sys/stat.h>
+#include <fstream>
 
 using namespace std;
 
@@ -34,6 +36,12 @@ bool comparator(Node* struct1, Node* struct2)
 	return (struct1->frequency < struct2->frequency);
 }
 
+int getFileSize(char *fileName)
+{
+	struct stat stat_buff;
+	int rc = stat(fileName, &stat_buff);
+	return (rc == 0) ? stat_buff.st_size : -1;
+}
 /*
 void traverseTree(Node* current, string directions)
 {
@@ -54,7 +62,8 @@ void traverseTree(Node* current, string directions)
 }
 */
 /*
-The second argument has all the directions that were taken to reach upto this node. Directions start from MSB. 0 means left, 1 means right
+The second argument has all the directions that were taken to reach upto this node. Directions start from MSB. 
+0 means left, 1 means right
 */
 void traverseTree(Node* current, unsigned int directions, int depth)
 {
@@ -89,7 +98,19 @@ void traverseTree(Node* current, unsigned int directions, int depth)
 
 int main()
 {
-	char document[] = "Hello, this is a sample string for which I will try to make a huffman tree. Okay now it seems that I have a basic program to test the compression. Lets add a bigger sentence and see how it peforms. Yes, this sentence that I am typing is to be used for checking the compression achieved";
+	//char document[] = "Hello, this is a sample string for which I will try to make a huffman tree. Okay now it seems that I have a basic program to test the compression. Lets add a bigger sentence and see how it peforms. Yes, this sentence that I am typing is to be used for checking the compression achieved";
+	char* document;
+	char sourceFileName[] = "test.txt";
+	int inputFileSize = getFileSize(sourceFileName);
+	if(inputFileSize > 0)
+	{
+		cout << "The size of file is " << inputFileSize << endl;
+	}
+	document = new char[inputFileSize];
+	fstream infile;
+	infile.open(sourceFileName, ios::in | ios::binary);
+	infile.read(document, inputFileSize);
+	infile.close();
 	int frequencies[256] = {};
 	
 	for(int i=0; i<=strlen(document); i++)
@@ -173,11 +194,23 @@ int main()
 		}
 	}
 	
+	int sum = 0;
+	for(int i=0; i<256; i++)
+	{
+		sum += frequencies[i] * CharacterEncodingDictionary[i].depth;
+	}
+	cout << "The predicted bit length is " << sum << endl;
+	
 	int index = 0;
-	char encoded[512] = "";
+	//char encoded[512] = "";
+	char *encoded;
+	encoded = new char[sum];
 	int bitIndex = 0;
 	int byteIndex = 0;
 	int bitInByte = 0;
+	
+	//Here we calculate the number of bits to be used for encoded data
+	
 	while(index < strlen(document))
 	{
 		char tmp = document[index++];
@@ -215,7 +248,8 @@ int main()
 		cout << int(encoded[i]) << " - ";
 	}
 	cout << endl;
-	char decoded[512] = "";
+	//char decoded[512] = "";
+	char *decoded = new char[inputFileSize];
 	int decodingBit = 0;
 	int byteInDecoded = 0;
 	Node *currentNode = root;
